@@ -1,7 +1,5 @@
 #include <SPI.h>
 
-int stepNumber = 1; 
-
 void setup() {
   //inicializar monitor serial: 
   Serial.begin(9600);
@@ -15,6 +13,11 @@ void setup() {
   SPI.setBitOrder(MSBFIRST);
   SPI.setDataMode(SPI_MODE0); 
   
+  for(int stepNumber=1; stepNumber<5;stepNumber++){
+    transferData(stepNumber, B11110000, B10101010);
+    
+  }
+  
 }
 
 void transferData(int stepNumber, byte byte1, byte byte2){
@@ -22,7 +25,7 @@ void transferData(int stepNumber, byte byte1, byte byte2){
   byte response; 
   
   response = SPI.transfer(stepNumber); 
-  Serial.println(response, BIN); 
+  Serial.println(response); 
   
   response = SPI.transfer(byte1); 
   Serial.println(response, BIN); 
@@ -35,12 +38,5 @@ void transferData(int stepNumber, byte byte1, byte byte2){
 void loop() {
   // put your main code here, to run repeatedly
   
-  transferData(stepNumber, B11110000, B10101010); 
-  
-  if(stepNumber == 4){
-    stepNumber = 1; 
-  }else{
-    stepNumber++;
-  }
   
 }
