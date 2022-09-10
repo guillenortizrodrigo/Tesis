@@ -14,16 +14,16 @@ float voltageMaxSet[slavesquantity] = {
   1.5 //volts
 }; 
 float voltageMinSet[slavesquantity] = {
-  1
+  0.5
 }; 
 float delta[slavesquantity] = {
-  .1
+  .008
 }; 
 float measurementVoltage[slavesquantity] = {
-  .5
+  0.1
 }; 
 float voltageMaxReset[slavesquantity] = {
-  -22141
+  0
 }; 
 float voltageMinReset[slavesquantity] = {
   -10485
@@ -36,21 +36,25 @@ float targetCurrent[slavesquantity] = {
 
 int delaytime = 200;
 
-void transferData(int stepNumber, byte byte1, byte byte2,int slavePin){
+void transferData(int stepNumber, unsigned int valor,int slavePin){
   byte response; 
   digitalWrite(slavePin,LOW);
-  response = SPI.transfer(stepNumber); 
+  delay(200);
+  response = SPI.transfer(stepNumber);
+  delay (100);
   Serial.println(response, BIN); 
   
-  response = SPI.transfer(byte1); 
-  Serial.println(response, BIN); 
+  response = SPI.transfer(( uint8_t)(valor >> 8)); 
+  Serial.println(response, BIN);
+  delay (100); 
   
-  response = SPI.transfer(byte2); 
+  response = SPI.transfer(( uint8_t)(valor)); 
   Serial.println(response, BIN);
   digitalWrite(slavePin,HIGH);
+  delay (100);
 }
 
-int volts2bits(float volts){
+unsigned int volts2bits(float volts){
   // convertir el voltaje ingresado por el usuario a 
   // bits para ser manejado por el programa. 
   float bits; 
@@ -74,16 +78,17 @@ void setup() {
       for(int stepNumber=1; stepNumber<5;stepNumber++){
         switch (stepNumber){
           case 1: 
-            transferData(stepNumber, ( uint8_t )( volts2bits(voltageMaxSet[i]) ),( uint8_t )( volts2bits(voltageMaxSet[i])>>8 ),slaves[i]);
+            transferData(stepNumber, volts2bits(delta[i]) ,slaves[i]);
             break; 
           case 2: 
-            transferData(stepNumber, ( uint8_t )( volts2bits(voltageMaxSet[i]) ), ( uint8_t )( volts2bits(voltageMaxSet[i])>>8 ),slaves[i]);
+            //medicion?
+            transferData(stepNumber, volts2bits(voltageMinSet[i]) + 32767 ,slaves[i]);
             break; 
           case 3: 
-            transferData(stepNumber, ( uint8_t )( volts2bits(voltageMaxSet[i]) ), ( uint8_t )( volts2bits(voltageMaxSet[i])>>8 ),slaves[i]);
+            transferData(stepNumber, volts2bits(voltageMaxSet[i]) + 32767 ,slaves[i]);
             break; 
           case 4: 
-            transferData(stepNumber, ( uint8_t )( volts2bits(measurementVoltage[i]) ), ( uint8_t )( volts2bits(measurementVoltage[i])>>8 ),slaves[i]);
+            transferData(stepNumber, volts2bits(measurementVoltage[i]) + 32767 ,slaves[i]);
             break; 
           default: {}
           
